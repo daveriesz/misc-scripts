@@ -1,0 +1,31 @@
+#!/bin/bash
+
+hn=$1
+xc=$2
+
+if [ "$hn" = "" ] ; then
+	echo "please supply (user@)host name" >&2
+	exit 1
+fi
+
+xc=`echo $xc | tr "[A-Z]" "[a-z]"`
+
+if [ "$xc" != "" ] ; then
+	if [ "$xc" != "tx" -a "$xc" != "rx" ] ; then
+		echo "invalid mode >>$xc<<" >&2
+		exit 1
+	fi
+else
+	echo "please supply mode: \"tx\" or \"rx\"" >&2
+	exit 1
+fi
+
+if   [ "$xc" == "tx" ] ; then
+	echo "streaming /dev/zero to $hn"
+	dd if=/dev/zero | btr 1m | ssh $hn dd of=/dev/null
+elif [ "$xc" == "rx" ] ; then
+	echo "streaming /dev/zero from $hn"
+	ssh $hn dd if=/dev/zero | btr 1m | dd of=/dev/null
+fi
+
+exit 0
